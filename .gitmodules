@@ -1,3 +1,9 @@
 [submodule "deps/tahu"]
 	path = deps/tahu
 	url = https://github.com/eclipse/tahu.git
+[submodule "deps/rapidjson"]
+	path = deps/rapidjson
+	url = https://github.com/Tencent/rapidjson.git
+[submodule "deps/libconfig"]
+	path = deps/libconfig
+	url = https://github.com/hyperrealm/libconfig.git

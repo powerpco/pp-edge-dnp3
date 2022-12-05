@@ -47,7 +47,7 @@ bool DNP3::start()
 
 	MasterStackConfig stackConfig;
 	stackConfig.master.responseTimeout = TimeDuration::Seconds(applicationTimeout);
-    stackConfig.master.disableUnsolOnStartup = true;
+    //stackConfig.master.disableUnsolOnStartup = true;
 	//stackConfig.master.startupIntegrityClassMask = ClassField::None();
 	stackConfig.link.LocalAddr = masterId;
 	stackConfig.link.RemoteAddr = outstation->linkId;
@@ -81,6 +81,7 @@ bool DNP3::start()
 	}
 
 	this->m_client = mqtt_client();
+	this->m_client.setTopic("spBv1.0/" + this->getGroup() + "/DDATA/" + this->getEdgeNode() + "/" + this->getDevice());
 	this->m_client.connect();
 
 	// Enable the DNP3 master and connect to outstation
@@ -92,11 +93,10 @@ template<class T> void DNP3SOEHandler::DNP3DataCallback(const HeaderInfo& info, 
 {
 	this->ddata_payload = new org_eclipse_tahu_protobuf_Payload();
     get_next_payload(this->ddata_payload);
-	cout << "callback" << endl;
 
     auto processData = [&](const Indexed<T>& pair)
 	{
-		this->dataElement<T>(info, pair.value, pair.index, objectType);
+		this->dataElement<T>(info, pair.value, this->m_dnp3->getOffset() + pair.index, objectType);
 	};
     values.ForeachItem(processData);
 
@@ -140,21 +140,29 @@ template<class T> void DNP3SOEHandler::dataElement(const HeaderInfo& info, const
     add_metric_to_payload(this->ddata_payload, &new_metric);
 }
 
-bool DNP3::configure()
+bool DNP3::configure(settings* s)
 {
 	DNP3::OutStationTCP *outstation = new DNP3::OutStationTCP();
-                
-	this->setMasterLinkId(1);
-	outstation->address = "127.0.0.1";
-	outstation->port = 20000;
-	outstation->linkId = 10;
+    
+	uint16_t mId = atoi(s->getValue("master_id").c_str());
+	this->setMasterLinkId(mId);
 
-	bool enableScan = true;
+	outstation->address = s->getValue("outstation_tcp_address").c_str();
+	outstation->port = atoi(s->getValue("outstation_tcp_port").c_str());
+	outstation->linkId = atoi(s->getValue("outstation_id").c_str());
 
+	bool enableScan = strcasecmp("true",s->getValue("outstation_scan_enable").c_str()) == 0;
 	this->enableScan(enableScan);
-	this->setTimeout(2);
-	this->setOutstationScanInterval(5);
+
+	this->setTimeout(atoi(s->getValue("data_fetch_timeout").c_str()));
+	this->setOutstationScanInterval(atoi(s->getValue("outstation_scan_interval").c_str()));
 	this->setOutstation(outstation);
+
+	this->setOffset(atoi(s->getValue("index_offset").c_str()));
+	
+	this->setGroup(s->getValue("group"));
+	this->setEdgeNode(s->getValue("edge_node"));
+	this->setDevice(s->getValue("device"));
 
 	return true;
 }

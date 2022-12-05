@@ -18,6 +18,7 @@
 #include <pb_encode.h>
 
 #include "mqtt_client.h"
+#include "settings.h"
 
 #define DEFAULT_APPLICATION_TIMEOUT "5" // seconds
 #define DEFAULT_MASTER_LINK_ID "1"
@@ -72,7 +73,7 @@ class DNP3 {
 		};
 
 		bool start();
-        bool configure();
+        bool configure(settings* s);
 		// Stop master anc close outstation connection
 		void stop()
 		{
@@ -102,10 +103,37 @@ class DNP3 {
 		{
 			m_outstation = outstation;
 		};
+		unsigned long getOffset() const
+		{
+			return m_offset;
+		}
+		void setOffset(unsigned long offset)
+		{
+			m_offset = offset;
+		}
+
 		void send(uint8_t* binary_buffer, size_t message_length) 
 		{
 			m_client.publish(binary_buffer, message_length);
 		};
+
+		void setGroup(string group)
+        {
+            m_group = group;
+        }
+        string getGroup() { return m_group; };
+
+        void setEdgeNode(string edgeNode)
+        {
+            m_edge_node = edgeNode;
+        }
+        string getEdgeNode() { return m_edge_node; };
+
+        void setDevice(string device)
+        {
+            m_device = device;
+        }
+        string getDevice() { return m_device; };
     private:
         uint16_t m_masterId;
 		DNP3Manager* m_manager;
@@ -113,7 +141,11 @@ class DNP3 {
 		unsigned long m_outstationScanInterval;
 		unsigned long m_applicationTimeout;
         DNP3::OutStationTCP* m_outstation;
+		unsigned long m_offset;
 		mqtt_client m_client;
+		string m_group;
+        string m_edge_node;
+        string m_device;
 };
 
 class DNP3SOEHandler : public opendnp3::ISOEHandler

@@ -1,0 +1,2 @@
+#!/bin/sh
+cmake -DBUILD_EXAMPLES=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF -S . -B out/build

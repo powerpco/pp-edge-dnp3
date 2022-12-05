@@ -45,8 +45,16 @@ class mqtt_client {
             m_host = host;
         }
         string getHost() { return m_host; };
+
+        void setTopic(string topic)
+        {
+            m_topic = topic;
+        }
+        string getTopic() { return m_topic; };
+
     private:
         struct mosquitto *mosq;
         string m_host;
         short unsigned int m_port;
+        string m_topic;
 };

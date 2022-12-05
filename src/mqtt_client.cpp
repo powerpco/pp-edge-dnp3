@@ -13,5 +13,5 @@ bool mqtt_client::connect()
 
 void mqtt_client::publish(uint8_t* binary_buffer, size_t message_length) 
 {
-    mosquitto_publish(this->mosq, NULL, "test", message_length, binary_buffer, 0, false);
+    mosquitto_publish(this->mosq, NULL, this->getTopic().c_str(), message_length, binary_buffer, 0, false);
 }

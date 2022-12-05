@@ -10,20 +10,35 @@ void sigint_handler(int signalId)
     running = false;
 }
 
+using namespace libconfig;
+
 int main(int argc, char* argv[])
 {
     /* Add Ctrl-C handler */
     signal(SIGINT, sigint_handler);
-    
-    /*
-    mqtt_client c = mqtt_client();
-    c.setHost("localhost");
-    c.setPort(1883);
-    c.connect();
-    */
+   
+    string filePath;
+    if(argc>=2)
+    {
+        
+        filePath = argv[1];
+    }
+    else
+    {
+        filePath = "/etc/pp-edge-dnp3/settings.cfg";
+    }
+
+    //cout << filePath << endl;
+
+    settings* s = new settings(filePath);
 
     DNP3* handler = new DNP3();
-    handler->configure();
+    handler->configure(s);
+    if(s) 
+    {
+        delete s;
+    }
+
     handler->start();
 
     while(running)
@@ -33,5 +48,5 @@ int main(int argc, char* argv[])
 
     handler->stop();
 
-    return 0;
+    return EXIT_FAILURE;
 }
